@@ -1,0 +1,116 @@
+#!/bin/bash -
+#===============================================================================
+#
+#          File: a.sh
+#
+#         Usage: ./git-update-dirs.sh 
+#
+#   Description: 
+#
+#       Options: ---
+#  Requirements: ---
+#          Bugs: ---
+#         Notes: ---
+#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
+#  Organization:
+#       Created: 05/06/14 17:48:00
+#   Last Change:  03/21/16 19:01:05
+#      Revision:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+CONTINUE=0
+PARALLELS=1
+
+usage () {
+	echo "Usage: $0 [[-c|--continue]|[-P|--noparallels]] <git-work-tree> ..."
+	echo "       [-c|--continue] silent implied [-P|--noparallels]"
+	exit 0
+}
+
+if [[ ! -e $(which git-update-dir) ]]; then
+	echo "Script git-update-dir NOT found"
+	exit -1
+fi
+
+while [[ $# > 1 ]]; do
+	opt="$1"
+	case $opt in
+		-c|--continue)
+			CONTINUE=1
+			PARALLELS=0
+			;;
+		-P|--noparallels)
+			PARALLELS=0
+			;;
+		-h|--help)
+			usage
+			;;
+		*)
+			break
+			;;
+	esac
+	shift
+done
+
+DIR_LIST=
+DIR_NUM=
+
+if [[ $# > 1 ]]; then
+	DIR_LIST=$@
+	DIR_NUM=$#
+else
+	read DIR_LIST
+	num=($(realpath ${DIR_LIST}))
+	DIR_NUM=${#n[@]}
+fi
+
+echo "Total ${DIR_NUM} directories"
+
+if [[ ${PARALLELS} == 1 ]]; then
+	realpath ${DIR_LIST} | xargs -P ${DIR_NUM} -I % sh -c 'echo "Updating [%]" && git-update-dir % || echo "!!! Failed to update [%]"'
+else
+	step="$1"
+	dirs_file=
+	START=0
+	if [[ ${CONTINUE} == 1 ]]; then
+		dirs_file=/tmp/.git-update-dirs$(pwd -P | sed -e "s|[/ !]|_|g")
+		if [ -f "${dirs_file}" ]; then
+			olds=$(cat "${dirs_file}")
+			if [[ "${DIR_LIST}" == "${olds}" ]]; then
+				if [ -f "${dirs_file}-step" ]; then
+					step=$(cat "${dirs_file}-step")
+					if [ -z "$(grep "${step}" "${dirs_file}")" ]; then
+						step=$1
+					fi
+				fi
+			else
+				echo "${DIR_LIST}" > "${dirs_file}"
+			fi
+		else
+			echo "${DIR_LIST}" > "${dirs_file}"
+		fi
+	fi
+
+	for arg in "${DIR_LIST}"
+	do
+		if [[ "${arg}" == "${step}" ]]; then
+			START=1
+		fi
+		if [[ ${START} == 1 ]]; then
+			if [ -n "${dirs_file}" ]; then
+				echo "${arg}" > "${dirs_file}-step"
+			fi
+			echo "Updating [${arg}]"
+			git-update-dir ${arg} || echo "!!! Failed to update [${arg}]"
+		fi
+	done
+
+	if [ -n "${dirs_file}" ]; then
+		rm -f "${dirs_file}" "${dirs_file}-step"
+	fi
+
+fi
+
+exit 0

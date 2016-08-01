@@ -1,0 +1,15 @@
+#!/bin/sh
+FILE="$*"
+[ -n "$*" ] || FILE=.
+
+if [ -x "`which gnufind`" ]; then
+	FIND="gnufind"
+elif [ -x "`which gfind`" ]; then
+	FIND="gfind"
+elif [ -x "`which find`" ]; then
+	FIND="find"
+else
+	return
+fi
+
+${FIND} "${FILE}" -not -type d

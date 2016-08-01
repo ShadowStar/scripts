@@ -1,0 +1,125 @@
+#!/bin/bash -
+#===============================================================================
+#
+#          File: git-vergen
+#
+#         Usage: ./git-vergen
+#
+#   Description: Generate version info base on the tag
+#
+#       Options: ---
+#  Requirements: ---
+#          Bugs: ---
+#         Notes: ---
+#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
+#  Organization:
+#       Created: 12/23/15 14:06:09
+#   Last Change:  12/23/15 18:38:09
+#      Revision:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+export LC_ALL=en_US.UTF-8
+
+FULL=0
+NOW=0
+HEAD=
+DIR=$PWD
+REL=
+
+usage () {
+	echo "Usage: $0 [-r|--release <addition tag>] [-f|--full[-n|--now]] [-d|--dir <git path>] [<commit id>]"
+	echo "       -r|--release    -- addition release tag, like alpha, beta, etc..."
+	echo "       -f|--full       -- display full message"
+	echo "       -n|--now        -- use current user & time instead of commit info"
+	echo "       -d|--dir <dir>  -- use <dir> as git work tree instead of \$(pwd)"
+	echo "       <commit id>     -- use <commit id> instead of HEAD"
+	exit -1
+}
+
+[ $# -le 7 ] || usage
+
+until [ $# -eq 0 ]; do
+	case "$1" in
+		-r|--release)
+			REL="$2";
+			shift 2;;
+		-f|--full)
+			FULL=1;
+			shift ;;
+		-n|--now)
+			NOW=1;
+			shift ;;
+		-d|--dir)
+			if [ $# -eq 1 ]; then
+				usage
+			else
+				DIR="$2"
+				shift 2
+			fi ;;
+		-*)
+			usage ;;
+		*)
+			HEAD="$1";
+			shift ;;
+	esac
+done
+
+git_dir=${DIR}
+
+[ -d "${git_dir}/.git" ] && git_dir=${git_dir}/.git
+
+export GIT_DIR=${git_dir}
+export GIT_WORK_TREE=${git_dir%/.git}
+
+check () {
+	git rev-parse --short ${HEAD:-HEAD} 1>/dev/null 2>&1 || \
+		(echo -n "[${DIR}] isn't a git work tree" &&
+		if [ -n "$HEAD" -a "$HEAD" != "HEAD" ]; then
+			echo " or commit id <${HEAD}> NOT found."
+		else
+			echo "."
+		fi && return -1)
+}
+
+check || exit -1
+
+get_ver () {
+	local major minor patch
+	major=$(echo $1 | cut -d'.' -f 1 | sed -e 's|^[vV]||')
+	minor=$(echo $1 | cut -d'.' -f 2-)
+	patch=$(echo $2 | sed -e "s|^$1-||" | cut -d'-' -f 1,3 2>/dev/null)
+	echo ${major}.${minor}.${patch}${REL}${3:+-dirty}
+}
+
+tag_ver () {
+	tag_info=$(git describe --abbrev=0 ${HEAD} 2>/dev/null)
+	tag_info=${tag_info:-0.0}
+	full_info=$(git describe --long ${HEAD} 2>/dev/null)
+	full_info=${full_info:-$(git log --oneline | wc -l | tr -d '[[:space:]]')}
+	dirty_info=$(git describe --always --dirty ${HEAD} 2>/dev/null | grep "\-dirty$")
+	echo "V$(get_ver ${tag_info} ${full_info} ${dirty_info})"
+}
+
+full_ver () {
+	branch=$(git branch --contain ${HEAD} | head -n1 | cut -d' ' -f 2- 2>/dev/null)
+	loginfo="$(git log --abbrev-commit --max-count=1 --date=iso ${HEAD} | head -n4)"
+	commit=$(echo ${loginfo} | sed -e 's|.*commit \([^[:space:]]*\) .*|\1|')
+	if [ $NOW -ne 0 ]; then
+		author="$(whoami) @$(uname -n).$(uname -s)"
+		date=$(date "+%Y-%m-%d %T %z")
+	else
+		author=$(echo ${loginfo} | sed -e 's|.*Author: \(.*\) Date.*|\1|')
+		date=$(echo ${loginfo} | sed -e 's|.*Date: \(.*\)|\1|')
+	fi
+	echo "$branch $commit $author $date"
+}
+
+echo -n "$(tag_ver)"
+if [ $FULL != 0 ]; then
+	echo " ($(full_ver))"
+else
+	echo ""
+fi
+

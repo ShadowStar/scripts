@@ -1,0 +1,64 @@
+#!/bin/bash -
+#===============================================================================
+#
+#          File: a.sh
+#
+#         Usage: ./git-update-dirs
+#
+#   Description: 
+#
+#       Options: ---
+#  Requirements: ---
+#          Bugs: ---
+#         Notes: ---
+#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
+#  Organization:
+#       Created: 05/06/14 17:48:00
+#   Last Change:  06/30/15 13:28:03
+#      Revision:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+export LC_ALL=en_US.UTF-8
+
+DIR=$PWD
+
+usage () {
+	echo "Usage: $0 [<git-work-tree>]"
+	echo "       <git-work-tree>  -- work tree which to be updated, default \$PWD"
+	exit -1
+}
+
+[ $# -le 1 ] || usage
+
+until [ $# -eq 0 ]; do
+	case "$1" in
+		-*)
+			usage ;;
+		*)
+			DIR="$1";
+			shift ;;
+	esac
+done
+
+if [[ ! -e $(which git) ]]; then
+	echo "Command \`\`git'' NOT found"
+	exit -1
+fi
+
+gitarg="--git-dir=\"${DIR}/.git\" --work-tree=\"${DIR}\""
+
+check () {
+	([ -d "$DIR" ] && \
+	 eval git ${gitarg} rev-parse --short HEAD 1>/dev/null 2>&1) || \
+	(echo "No such directory [${DIR}] , or it isn't a git work tree."; return -1)
+}
+
+check || exit -1
+
+eval git ${gitarg} remote update && eval git ${gitarg} pull --no-stat && \
+	cd "${DIR}" && git remote prune origin && LC_ALL=C date > "${DIR}"/.lastupdate
+ret=$?
+eval git ${gitarg} gc --quiet
+exit $ret

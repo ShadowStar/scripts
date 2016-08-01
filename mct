@@ -1,0 +1,52 @@
+#!/bin/bash -
+#===============================================================================
+#
+#          File: mct.sh
+#
+#         Usage: ./mct.sh 
+#
+#   Description: 
+#
+#       Options: ---
+#  Requirements: ---
+#          Bugs: ---
+#         Notes: ---
+#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
+#  Organization: 
+#       Created: 03/28/16 11:40:08
+#   Last Change:  03/28/16 12:54:33
+#      Revision:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+set -f
+
+Usage () {
+	echo "Usage: $0 [directory] [file-expr...]"
+	exit 0
+}
+
+DIR=$(realpath ${PWD})
+EXPR_LIST=
+
+if [[ $# -ge 1 && -d "$(realpath $1 2>/dev/null)" ]]; then
+	DIR=$(realpath $1)
+	shift
+fi
+
+if [[ $# -ge 1 ]]; then
+	EXPR="$@"
+else
+	EXPR="*.h *.c"
+fi
+
+for e in ${EXPR}; do
+	EXPR_LIST="${EXPR_LIST} -o -iname ${e}"
+done
+
+EXPR_LIST=${EXPR_LIST/-o/}
+
+find ${DIR} \( ${EXPR_LIST} \) -print >${DIR}/cscope.files
+cd ${DIR}
+exuberant-ctags -L cscope.files
+cscope -bkq -i cscope.files

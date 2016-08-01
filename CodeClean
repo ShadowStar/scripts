@@ -1,0 +1,20 @@
+#!/bin/bash
+ORIG="$*"
+TMP="${ORIG}"~
+
+if [ -n "${GNUPATH}" ]; then
+	PATH="${GNUPATH}:${PATH}"
+fi
+
+if [ -x "$(which gnused 2>/dev/null)" ]; then
+	SED="gnused"
+elif [ -x "$(which gsed 2>/dev/null)" ]; then
+	SED="gsed"
+elif [ -x "$(which sed 2>/dev/null)" ]; then
+	SED="sed"
+else
+	return
+fi
+
+mv ${ORIG} ${TMP} && ${SED} 's/\s*$//' ${TMP} | ${SED} '/./,/^$/!d;${/./G}' | ${SED} -r '/^}$|^};$/{n;/^$/!s/^/\n/}' | ${SED} -e '/^$/{N;s/^\n}/}/}' -e '/{/{n;/^$/d}' > ${ORIG}
+

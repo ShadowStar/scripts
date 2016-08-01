@@ -1,0 +1,73 @@
+#!/bin/bash -
+#===============================================================================
+#
+#          File: a.sh
+#
+#         Usage: ./a.sh 
+#
+#   Description: 
+#
+#       Options: ---
+#  Requirements: ---
+#          Bugs: ---
+#         Notes: ---
+#        Author:  ShadowStar, <orphen.leiliu@gmail.com>
+#  Organization:  Gmail
+#       Created: 06/09/16 03:03:11
+#   Last Change:  06/09/16 04:02:04
+#      Revision:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+export LC_ALL=en_US.UTF-8
+
+REFS="refs/heads refs/remotes"
+COMMIT=
+
+usage () {
+	echo "Usage: $0 [-a|--all] [-t|--tags] [<contains id>]"
+	echo "       -a|--all       -- show all refs"
+	echo "       -t|--tags      -- show tags instead of branches"
+	echo "       <contains id>  -- only list refs which contain specify commit"
+	exit -1
+}
+
+[ $# -le 4 ] || usage
+
+until [ $# -eq 0 ]; do
+	case "$1" in
+		-a|--all)
+			REFS=refs/
+			shift ;;
+		-t|--tag|--tags)
+			REFS=refs/tags
+			shift ;;
+		-*)
+			usage ;;
+		*)
+			COMMIT="--contains $1";
+			shift ;;
+	esac
+done
+
+fmt='
+	red=%(color:red)
+	green=%(color:green)
+	yellow=%(color:yellow)
+	blue=%(color:blue)
+	cyan=%(color:cyan)
+	reset=%(color:reset)
+	a=%(authorname)%(*authorname)
+	n=%(refname)
+	d=%(committerdate:iso)%(*committerdate:iso)
+	s=%(subject)
+	S=%(objectname:short)
+	b=${n#refs/heads/}
+	u=%(upstream)
+	H=%(HEAD)
+	echo "${red}${H/\*/${green}*} ${b#refs/}${reset}${u/*/ [${blue}${u#refs/remotes/}${reset}]} <${yellow}$a${reset}@${yellow}$d${reset}> ${cyan}$S${reset} $s"
+	'
+
+eval=`git for-each-ref --shell --format="$fmt" ${REFS} ${COMMIT}`
+eval "$eval" | sort -t@ -k2 -r

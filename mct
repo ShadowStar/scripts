@@ -14,7 +14,7 @@
 #        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
 #  Organization: 
 #       Created: 03/28/16 11:40:08
-#   Last Change:  03/28/16 12:54:33
+#   Last Change:  08/02/16 12:07:05
 #      Revision:  ---
 #===============================================================================
 
@@ -48,5 +48,5 @@ EXPR_LIST=${EXPR_LIST/-o/}
 
 find ${DIR} \( ${EXPR_LIST} \) -print >${DIR}/cscope.files
 cd ${DIR}
-exuberant-ctags -L cscope.files
+exuberant-ctags --c-kinds=+px --c++-kinds=+px --fields=+iaS --extra=+q -L cscope.files
 cscope -bkq -i cscope.files

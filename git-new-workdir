@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash -
 
 usage () {
-	echo "Usage: $0 <repository> <new_workdir> [<branch>]"
+	echo "Usage: $0 <repository> <new_workdir> [<branch>|[-o|--orphan <branch>]]"
 	echo "       <repository>   -- original repository"
 	echo "       <new_workdir>  -- new working directory"
+	echo "       -o|--orphan    -- create new orphan branch"
 	echo "       <branch>       -- specified branch or commit "
 	exit -1
 }
@@ -17,7 +18,7 @@ failed () {
 	die "unable to create new workdir '$new_workdir'!"
 }
 
-if test $# -lt 2 || test $# -gt 3
+if test $# -lt 2 || test $# -gt 4
 then
 	usage
 fi
@@ -25,6 +26,14 @@ fi
 orig_git=$1
 new_workdir=$2
 branch=$3
+orphan=0
+if [[ "$branch" == "-o" ]] || [[ "$branch" == "--orphan" ]]; then
+	if test $# -lt 4; then
+		die "create orphan branch need a name"
+	fi
+	branch=$4
+	orphan=1
+fi
 
 # want to make sure that what is pointed to has a .git directory ...
 git_dir=$(cd "$orig_git" 2>/dev/null &&
@@ -105,4 +114,9 @@ trap - $siglist
 
 # checkout the branch (either the same as HEAD from the original repository,
 # or the one that was asked for)
-git checkout -f $branch
+if [ $orphan != 0 ]; then
+	git checkout --orphan $branch $(git rev-list --all --reverse | head -n1)
+	git rm -f -r -q . 2>/dev/null
+else
+	git checkout -f $branch
+fi

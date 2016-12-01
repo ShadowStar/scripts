@@ -11,10 +11,10 @@
 #  Requirements: ---
 #          Bugs: ---
 #         Notes: ---
-#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
-#  Organization:
+#        Author: ShadowStar, <orphen.leiliu@gmail.com>
+#  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change:  06/30/15 13:28:03
+#   Last Change: 12/01/2016 15:29:43
 #      Revision:  ---
 #===============================================================================
 
@@ -50,15 +50,15 @@ fi
 gitarg="--git-dir=\"${DIR}/.git\" --work-tree=\"${DIR}\""
 
 check () {
-	([ -d "$DIR" ] && \
-	 eval git ${gitarg} rev-parse --short HEAD 1>/dev/null 2>&1) || \
+	[ -d "$DIR"/.git ] || \
 	(echo "No such directory [${DIR}] , or it isn't a git work tree."; return -1)
 }
 
 check || exit -1
 
-eval git ${gitarg} remote update && eval git ${gitarg} pull --no-stat && \
-	cd "${DIR}" && git remote prune origin && LC_ALL=C date > "${DIR}"/.lastupdate
+eval git ${gitarg} remote update && eval git ${gitarg} remote prune origin && \
+	eval git ${gitarg} pull --no-stat
 ret=$?
+LC_ALL=C date > "${DIR}"/.lastupdate
 eval git ${gitarg} gc --quiet
 exit $ret

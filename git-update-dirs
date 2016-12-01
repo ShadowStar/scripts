@@ -11,20 +11,20 @@
 #  Requirements: ---
 #          Bugs: ---
 #         Notes: ---
-#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
-#  Organization:
+#        Author: ShadowStar, <orphen.leiliu@gmail.com>
+#  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change:  03/21/16 19:01:05
+#   Last Change: 12/01/2016 15:05:59
 #      Revision:  ---
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
 
 CONTINUE=0
-PARALLELS=1
+PARALLELS=
 
 usage () {
-	echo "Usage: $0 [[-c|--continue]|[-P|--noparallels]] <git-work-tree> ..."
+	echo "Usage: $0 [[-c|--continue]|[-P|--parallels <num>]] <git-work-tree> ..."
 	echo "       [-c|--continue] silent implied [-P|--noparallels]"
 	exit 0
 }
@@ -34,15 +34,16 @@ if [[ ! -e $(which git-update-dir) ]]; then
 	exit -1
 fi
 
-while [[ $# > 1 ]]; do
+while [[ $# > 0 ]]; do
 	opt="$1"
 	case $opt in
 		-c|--continue)
 			CONTINUE=1
-			PARALLELS=0
+			PARALLELS=1
 			;;
-		-P|--noparallels)
-			PARALLELS=0
+		-P|--parallels)
+			[ $CONTINUE = 0 ] && PARALLELS=$2
+			shift
 			;;
 		-h|--help)
 			usage
@@ -57,21 +58,23 @@ done
 DIR_LIST=
 DIR_NUM=
 
-if [[ $# > 1 ]]; then
+if [[ $# > 0 ]]; then
 	DIR_LIST=$@
 	DIR_NUM=$#
 else
 	read DIR_LIST
-	num=($(realpath ${DIR_LIST}))
+	n=($(realpath ${DIR_LIST}))
 	DIR_NUM=${#n[@]}
 fi
 
-echo "Total ${DIR_NUM} directories"
+PARALLELS=${PARALLELS:-${DIR_NUM}}
 
-if [[ ${PARALLELS} == 1 ]]; then
-	realpath ${DIR_LIST} | xargs -P ${DIR_NUM} -I % sh -c 'echo "Updating [%]" && git-update-dir % || echo "!!! Failed to update [%]"'
+echo "Total ${DIR_NUM} directories, updating in ${PARALLELS} threads."
+
+if [[ ${PARALLELS} > 1 ]]; then
+	realpath ${DIR_LIST} | xargs -P ${PARALLELS} -I % sh -c 'echo "Updating [%]" && git-update-dir % || echo "!!! Failed to update [%]"'
 else
-	step="$1"
+	step="$(realpath $1)"
 	dirs_file=
 	START=0
 	if [[ ${CONTINUE} == 1 ]]; then
@@ -93,7 +96,7 @@ else
 		fi
 	fi
 
-	for arg in "${DIR_LIST}"
+	for arg in $(realpath ${DIR_LIST})
 	do
 		if [[ "${arg}" == "${step}" ]]; then
 			START=1

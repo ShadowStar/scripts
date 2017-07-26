@@ -11,10 +11,10 @@
 #  Requirements: ---
 #          Bugs: ---
 #         Notes: ---
-#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
-#  Organization: 
+#        Author: ShadowStar, <orphen.leiliu@gmail.com>
+#  Organization: Gmail
 #       Created: 03/28/16 11:40:08
-#   Last Change:  08/02/16 12:07:05
+#   Last Change:  07/25/2017 10:33:29
 #      Revision:  ---
 #===============================================================================
 
@@ -37,7 +37,7 @@ fi
 if [[ $# -ge 1 ]]; then
 	EXPR="$@"
 else
-	EXPR="*.h *.c"
+	EXPR="*.h *.c *.cpp *.hpp"
 fi
 
 for e in ${EXPR}; do

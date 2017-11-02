@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 12/01/2016 15:05:59
+#   Last Change: 09/07/2017 19:50:44
 #      Revision:  ---
 #===============================================================================
 
@@ -67,7 +67,21 @@ else
 	DIR_NUM=${#n[@]}
 fi
 
-PARALLELS=${PARALLELS:-${DIR_NUM}}
+CORE_NUM=
+
+if [[ $(uname -s) == Linux ]]; then
+	CORE_NUM=$(nproc)
+elif [[ $(uname -s) == Darwin ]]; then
+	CORE_NUM=$(sysctl -n hw.ncpu)
+fi
+
+if [[ ! -n ${PARALLELS} ]]; then
+	if [[ ${CORE_NUM} < ${DIR_NUM} ]]; then
+		PARALLELS=$((${CORE_NUM} + 1))
+	else
+		PARALLELS=${DIR_NUM}
+	fi
+fi
 
 echo "Total ${DIR_NUM} directories, updating in ${PARALLELS} threads."
 

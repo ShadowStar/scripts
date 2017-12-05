@@ -11,26 +11,30 @@
 #  Requirements: ---
 #          Bugs: ---
 #         Notes: ---
-#        Author: Lei Liu (ShadowStar), orphen.leiliu@icloud.com
-#  Organization:
+#        Author: ShadowStar, <orphen.leiliu@gmail.com>
+#  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  12/23/15 18:38:09
+#   Last Change:  12/05/2017 21:35:44
 #      Revision:  ---
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
 
-export LC_ALL=en_US.UTF-8
+export LC_ALL=POSIX
+export LANG=POSIX
 
-FULL=0
-NOW=0
+COMMIT=
+FULL=
+NOW=
 HEAD=
 DIR=$PWD
 REL=
+OUTPUT=
 
 usage () {
-	echo "Usage: $0 [-r|--release <addition tag>] [-f|--full[-n|--now]] [-d|--dir <git path>] [<commit id>]"
+	echo "Usage: $0 [-r|--release <addition tag>] [-c|--commit] [-f|--full[-n|--now]] [-d|--dir <git path>] [<commit id>]"
 	echo "       -r|--release    -- addition release tag, like alpha, beta, etc..."
+	echo "       -c|--commit     -- show commit id"
 	echo "       -f|--full       -- display full message"
 	echo "       -n|--now        -- use current user & time instead of commit info"
 	echo "       -d|--dir <dir>  -- use <dir> as git work tree instead of \$(pwd)"
@@ -45,7 +49,11 @@ until [ $# -eq 0 ]; do
 		-r|--release)
 			REL="$2";
 			shift 2;;
+		-c|--commit)
+			COMMIT=1;
+			shift ;;
 		-f|--full)
+			COMMIT=1;
 			FULL=1;
 			shift ;;
 		-n|--now)
@@ -85,41 +93,49 @@ check () {
 
 check || exit -1
 
-get_ver () {
-	local major minor patch
-	major=$(echo $1 | cut -d'.' -f 1 | sed -e 's|^[vV]||')
-	minor=$(echo $1 | cut -d'.' -f 2-)
-	patch=$(echo $2 | sed -e "s|^$1-||" | cut -d'-' -f 1,3 2>/dev/null)
-	echo ${major}.${minor}.${patch}${REL}${3:+-dirty}
+desc_info () {
+	local desc
+	desc=$(git describe --tags --long --always ${HEAD} 2>/dev/null)
+	$(echo ${desc} | grep -q '\-g[0-9a-fA-F]\+$') || \
+		desc="0.0-$(git log --oneline | wc -l | tr -d '[[:space:]]')-g${desc}"
+	echo "${desc}"
 }
 
-tag_ver () {
-	tag_info=$(git describe --abbrev=0 ${HEAD} 2>/dev/null)
-	tag_info=${tag_info:-0.0}
-	full_info=$(git describe --long ${HEAD} 2>/dev/null)
-	full_info=${full_info:-$(git log --oneline | wc -l | tr -d '[[:space:]]')}
-	dirty_info=$(git describe --always --dirty ${HEAD} 2>/dev/null | grep "\-dirty$")
-	echo "V$(get_ver ${tag_info} ${full_info} ${dirty_info})"
+DESC=$(desc_info)
+
+get_version() {
+	local ver patch
+	ver=$(echo ${DESC} | cut -d'-' -f 1 | sed -e 's|^[vV]||')
+	patch=$(echo ${DESC} | cut -d'-' -f 2)
+	echo ${ver}.${patch}
 }
 
-full_ver () {
-	branch=$(git branch --contain ${HEAD} | head -n1 | cut -d' ' -f 2- 2>/dev/null)
-	loginfo="$(git log --abbrev-commit --max-count=1 --date=iso ${HEAD} | head -n4)"
-	commit=$(echo ${loginfo} | sed -e 's|.*commit \([^[:space:]]*\) .*|\1|')
-	if [ $NOW -ne 0 ]; then
-		author="$(whoami) @$(uname -n).$(uname -s)"
-		date=$(date "+%Y-%m-%d %T %z")
+commit_info () {
+	echo ${DESC} | cut -d'-' -f 3 | cut -c 2-
+}
+
+dirty_info () {
+	dirty=$(git describe --always --dirty ${HEAD} 2>/dev/null | grep "\-dirty$")
+	echo "${dirty:+x}"
+}
+
+branch_info () {
+	git branch --contain ${HEAD} | head -n1 | cut -d' ' -f 2- 2>/dev/null
+}
+
+log_info () {
+	git log --abbrev-commit --max-count=1 --date=iso ${HEAD} | head -n4
+}
+
+author_date_info () {
+	if [ -n "$NOW" ]; then
+		echo "$(whoami) @$(uname -n).$(uname -s) $(date '+%Y-%m-%d %T %z')"
 	else
-		author=$(echo ${loginfo} | sed -e 's|.*Author: \(.*\) Date.*|\1|')
-		date=$(echo ${loginfo} | sed -e 's|.*Date: \(.*\)|\1|')
+		echo $(log_info) | sed -e 's|.*Author: \(.*\) Date: \(.*\)|\1 \2|'
 	fi
-	echo "$branch $commit $author $date"
 }
 
-echo -n "$(tag_ver)"
-if [ $FULL != 0 ]; then
-	echo " ($(full_ver))"
-else
-	echo ""
-fi
+OUTPUT="$(get_version)${COMMIT:+-$(commit_info)}$(dirty_info)${REL}"
+ADDITION="${FULL:+ ($(branch_info) $(author_date_info))}"
 
+echo ${OUTPUT}${ADDITION}

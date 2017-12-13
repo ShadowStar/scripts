@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  12/05/2017 21:35:44
+#   Last Change:  12/13/2017 22:19:26
 #      Revision:  ---
 #===============================================================================
 
@@ -88,7 +88,7 @@ check () {
 			echo " or commit id <${HEAD}> NOT found."
 		else
 			echo "."
-		fi && return -1)
+		fi && return 255)
 }
 
 check || exit -1

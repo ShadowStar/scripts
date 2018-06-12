@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  12/13/2017 22:19:26
+#   Last Change:  06/12/2018 12:06:57
 #      Revision:  ---
 #===============================================================================
 
@@ -120,7 +120,7 @@ dirty_info () {
 }
 
 branch_info () {
-	git branch --contain ${HEAD} | head -n1 | cut -d' ' -f 2- 2>/dev/null
+	git branch --contain ${HEAD} | grep "^\*" | cut -d' ' -f 2- 2>/dev/null
 }
 
 log_info () {

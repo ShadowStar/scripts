@@ -70,8 +70,6 @@ git_dir=$(cd "$git_dir" && pwd) || exit 1
 if $(git worktree --help >/dev/null 2>&1)
 then
 	echo "Deprecated, use \`git-worktree' instead."
-	git --git-dir=${git_dir} worktree add ${new_workdir} ${branch}
-	exit
 fi
 
 # don't recreate a workdir over an existing directory, unless it's empty

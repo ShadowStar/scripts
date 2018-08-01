@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  06/12/2018 12:06:57
+#   Last Change:  08/01/2018 22:00:52
 #      Revision:  ---
 #===============================================================================
 
@@ -76,7 +76,7 @@ done
 
 git_dir=${DIR}
 
-[ -d "${git_dir}/.git" ] && git_dir=${git_dir}/.git
+[ -e "${git_dir}/.git" ] && git_dir=${git_dir}/.git
 
 export GIT_DIR=${git_dir}
 export GIT_WORK_TREE=${git_dir%/.git}

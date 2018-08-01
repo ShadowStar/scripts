@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 12/01/2016 15:29:43
+#   Last Change: 08/01/2018 22:07:08
 #      Revision:  ---
 #===============================================================================
 
@@ -50,7 +50,7 @@ fi
 gitarg="--git-dir=\"${DIR}/.git\" --work-tree=\"${DIR}\""
 
 check () {
-	[ -d "$DIR"/.git ] || \
+	[ -e "$DIR"/.git ] || \
 	(echo "No such directory [${DIR}] , or it isn't a git work tree."; return -1)
 }
 

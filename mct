@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 03/28/16 11:40:08
-#   Last Change:  07/25/2017 10:33:29
+#   Last Change:  08/06/2018 00:44:06
 #      Revision:  ---
 #===============================================================================
 
@@ -46,7 +46,6 @@ done
 
 EXPR_LIST=${EXPR_LIST/-o/}
 
-find ${DIR} \( ${EXPR_LIST} \) -print >${DIR}/cscope.files
-cd ${DIR}
+find ${DIR} \( ${EXPR_LIST} \) -print >${PWD}/cscope.files
 exuberant-ctags --c-kinds=+px --c++-kinds=+px --fields=+iaS --extra=+q -L cscope.files
 cscope -bkq -i cscope.files

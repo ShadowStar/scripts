@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 08/01/2018 22:07:08
+#   Last Change: 04/09/2019 16:27:57
 #      Revision:  ---
 #===============================================================================
 
@@ -25,8 +25,8 @@ export LC_ALL=en_US.UTF-8
 DIR=$PWD
 
 usage () {
-	echo "Usage: $0 [<git-work-tree>]"
-	echo "       <git-work-tree>  -- work tree which to be updated, default \$PWD"
+	echo "Usage: $0 [<git work-tree/repository>]"
+	echo "       <git work-tree/repository>  -- work-tree or repository which to be updated, default \$PWD"
 	exit -1
 }
 
@@ -37,7 +37,7 @@ until [ $# -eq 0 ]; do
 		-*)
 			usage ;;
 		*)
-			DIR="$1";
+			DIR="$(realpath $1)";
 			shift ;;
 	esac
 done
@@ -47,11 +47,15 @@ if [[ ! -e $(which git) ]]; then
 	exit -1
 fi
 
-gitarg="--git-dir=\"${DIR}/.git\" --work-tree=\"${DIR}\""
+if [[ -e ${DIR}/.git ]]; then
+	gitarg="--git-dir=\"${DIR}/.git\" --work-tree=\"${DIR}\""
+else
+	gitarg="--git-dir=\"${DIR}\""
+fi
 
 check () {
-	[ -e "$DIR"/.git ] || \
-	(echo "No such directory [${DIR}] , or it isn't a git work tree."; return -1)
+	eval git ${gitarg} remote >/dev/null 2>&1 || \
+	(echo "Can't NOT fetch remote for [${DIR}], or it isn't a git work-tree/repository."; return -1)
 }
 
 check || exit -1

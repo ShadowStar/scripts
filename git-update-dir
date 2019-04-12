@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 04/12/2019 21:00:17
+#   Last Change: 04/12/2019 21:07:57
 #      Revision:  ---
 #===============================================================================
 
@@ -55,7 +55,7 @@ fi
 
 check () {
 	eval git ${gitarg} remote >/dev/null 2>&1 || \
-	(echo "Can't NOT fetch remote for [${DIR}], or it isn't a git work-tree/repository."; return -1)
+	(echo "Can't NOT fetch remote for [${DIR}], or it isn't a git work-tree/repository." >&2; return -1)
 }
 
 check || exit -1

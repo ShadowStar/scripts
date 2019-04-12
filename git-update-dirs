@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 09/07/2017 19:50:44
+#   Last Change: 04/12/2019 21:09:53
 #      Revision:  ---
 #===============================================================================
 
@@ -120,7 +120,7 @@ else
 				echo "${arg}" > "${dirs_file}-step"
 			fi
 			echo "Updating [${arg}]"
-			git-update-dir ${arg} || echo "!!! Failed to update [${arg}]"
+			git-update-dir ${arg} || echo "!!! Failed to update [${arg}]" >&2
 		fi
 	done
 

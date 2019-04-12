@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 05/06/14 17:48:00
-#   Last Change: 04/09/2019 16:27:57
+#   Last Change: 04/12/2019 21:00:17
 #      Revision:  ---
 #===============================================================================
 
@@ -60,8 +60,8 @@ check () {
 
 check || exit -1
 
-eval git ${gitarg} remote update && eval git ${gitarg} remote prune origin && \
-	eval git ${gitarg} pull --no-stat
+eval git ${gitarg} remote update && eval git ${gitarg} remote prune origin
+
 ret=$?
 LC_ALL=C date > "${DIR}"/.lastupdate
 eval git ${gitarg} gc --quiet

@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  08/01/2018 22:00:52
+#   Last Change:  12/03/2020 18:09:05
 #      Revision:  ---
 #===============================================================================
 
@@ -97,7 +97,7 @@ desc_info () {
 	local desc
 	desc=$(git describe --tags --long --always ${HEAD} 2>/dev/null)
 	$(echo ${desc} | grep -q '\-g[0-9a-fA-F]\+$') || \
-		desc="0.0-$(git log --oneline | wc -l | tr -d '[[:space:]]')-g${desc}"
+		desc="0.0-$(git log --oneline ${HEAD} | wc -l | tr -d '[[:space:]]')-g${desc}"
 	echo "${desc}"
 }
 

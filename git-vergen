@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  07/21/2021 19:34:42
+#   Last Change:  09/06/2022 19:53:38
 #      Revision:  ---
 #===============================================================================
 
@@ -97,7 +97,7 @@ desc_info () {
 	local tag desc
 	desc=$(git log --oneline -1 ${HEAD} | cut -d ' ' -f 1 | cut -c 1-7)
 	tag=$(git log --decorate --simplify-by-decoration --oneline ${HEAD} | \
-		grep "^[[:xdigit:]]\+ ([^)]*tag\:" | head -n1 | \
+		grep "^[[:xdigit:]]\+ ([^)]*tag:" | head -n1 | \
 		sed -e "s|tag\:|\n|; s|^\([[:xdigit:]]*\) ([^)]*\n \([^, )]*\).*|\1 \2|")
 
 	if [ -n "${tag}" ]; then

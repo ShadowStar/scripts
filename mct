@@ -3,9 +3,9 @@
 #
 #          File: mct.sh
 #
-#         Usage: ./mct.sh 
+#         Usage: ./mct.sh
 #
-#   Description: 
+#   Description: Make CSCOPE & tags
 #
 #       Options: ---
 #  Requirements: ---
@@ -14,8 +14,8 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization: Gmail
 #       Created: 03/28/16 11:40:08
-#   Last Change:  08/06/2018 00:44:06
-#      Revision:  ---
+#   Last Change: 04/17/2023 18:55:20
+#      Revision: ---
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
@@ -46,6 +46,8 @@ done
 
 EXPR_LIST=${EXPR_LIST/-o/}
 
+echo -n "Generate cscope & tags for ${DIR} ..."
 find ${DIR} \( ${EXPR_LIST} \) -print >${PWD}/cscope.files
 exuberant-ctags --c-kinds=+px --c++-kinds=+px --fields=+iaS --extra=+q -L cscope.files
 cscope -bkq -i cscope.files
+echo " Done"

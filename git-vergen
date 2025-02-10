@@ -14,7 +14,7 @@
 #        Author: ShadowStar, <orphen.leiliu@gmail.com>
 #  Organization:Gmail
 #       Created: 12/23/15 14:06:09
-#   Last Change:  09/06/2022 19:53:38
+#   Last Change:  02/10/2025 19:58:34
 #      Revision:  ---
 #===============================================================================
 
@@ -83,12 +83,12 @@ export GIT_WORK_TREE=${git_dir%/.git}
 
 check () {
 	git rev-parse --short ${HEAD:-HEAD} 1>/dev/null 2>&1 || \
-		(echo -n "[${DIR}] isn't a git work tree" &&
+		(echo -n "[${DIR}] isn't a git work tree" >&2 &&
 		if [ -n "$HEAD" -a "$HEAD" != "HEAD" ]; then
-			echo " or commit id <${HEAD}> NOT found."
+			echo " or commit id <${HEAD}> NOT found." >&2
 		else
-			echo "."
-		fi && return 255)
+			echo "." >&2
+		fi && echo "($(whoami)@$(uname -n).$(uname -s) $(date +'%Y-%m-%d %H:%M:%S %z'))" && return 255)
 }
 
 check || exit -1
